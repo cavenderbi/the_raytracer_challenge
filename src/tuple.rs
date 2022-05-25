@@ -1,11 +1,11 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug)]
 pub struct Tuple {
-    x: f64,
-    y: f64,
-    z: f64,
-    w: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
 }
 #[allow(dead_code)]
 impl Tuple {
@@ -96,97 +96,11 @@ impl Div<f64> for Tuple {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn point_w() {
-        assert_eq!(
-            Tuple::point(4.3, -4.2, 3.1),
-            Tuple::tuple(4.3, -4.2, 3.1, 1.0),
-        )
+impl PartialEq for Tuple {
+    fn eq(&self, other: &Tuple) -> bool {
+        (self.x - other.x).abs() < 1e-5
+            && (self.y - other.y).abs() < 1e-5
+            && (self.z - other.z).abs() < 1e-5
+            && (self.w - other.w).abs() < 1e-5
     }
-    #[test]
-    fn vector_w() {
-        assert_eq!(
-            Tuple::vector(4.3, -4.2, 3.1),
-            Tuple::tuple(4.3, -4.2, 3.1, 0.0),
-        )
-    }
-    #[test]
-    fn add_tuples() {
-        assert_eq!(
-            Tuple::tuple(3.0, -2.0, 5.0, 1.0) + Tuple::tuple(-2.0, 3.0, 1.0, 0.0),
-            Tuple::tuple(1.0, 1.0, 6.0, 1.0),
-        )
-    }
-    #[test]
-    fn sub_points() {
-        assert_eq!(
-            Tuple::point(3.0, 2.0, 1.0) - Tuple::point(5.0, 6.0, 7.0),
-            Tuple::vector(-2.0, -4.0, -6.0),
-        );
-        assert_eq!(
-            Tuple::point(3.0, 2.0, 1.0) - Tuple::vector(5.0, 6.0, 7.0),
-            Tuple::point(-2.0, -4.0, -6.0)
-        );
-        assert_eq!(
-            Tuple::vector(3.0, 2.0, 1.0) - Tuple::vector(5.0, 6.0, 7.0),
-            Tuple::vector(-2.0, -4.0, -6.0),
-        );
-    }
-    #[test]
-    fn mul_tuple() {
-        assert_eq!(
-            Tuple::tuple(1.0, -2.0, 3.0, -4.0) * 3.5,
-            Tuple::tuple(3.5, -7.0, 10.5, -14.0),
-        );
-        assert_eq!(
-            Tuple::tuple(1.0, -2.0, 3.0, -4.0) * 0.5,
-            Tuple::tuple(0.5, -1.0, 1.5, -2.0),
-        );
-    }
-    #[test]
-    fn div_tuple() {
-        assert_eq!(
-            Tuple::tuple(1.0, -2.0, 3.0, -4.0) / 2.0,
-            Tuple::tuple(0.5, -1.0, 1.5, -2.0),
-        )
-    }
-    #[test]
-    fn vec_length() {
-        assert_eq!(Tuple::vector(1.0, 0.0, 0.0).length(), 1.0);
-        assert_eq!(Tuple::vector(0.0, 1.0, 0.0).length(), 1.0);
-        assert_eq!(Tuple::vector(0.0, 0.0, 1.0).length(), 1.0);
-        assert_eq!(Tuple::vector(1.0, 2.0, 3.0).length(), 14.0_f64.sqrt());
-        assert_eq!(Tuple::vector(-1.0, -2.0, -3.0).length(), 14.0_f64.sqrt());
-    }
-    #[test]
-    fn vec_norm() {
-        assert_eq!(
-            Tuple::vector(4.0, 0.0, 0.0).normalize(),
-            Tuple::vector(1.0, 0.0, 0.0)
-        );
-        assert_eq!(
-            Tuple::vector(1.0, 2.0, 3.0).normalize(),
-            Tuple::vector(
-                1.0 / 14.0_f64.sqrt(),
-                2.0 / 14.0_f64.sqrt(),
-                3.0 / 14.0_f64.sqrt()
-            )
-        );
-
-        let norm = Tuple::vector(1.0, 2.0, 3.0).normalize();
-        assert_eq!(norm.length(), 1.0);
-    }
-    #[test]
-    fn vec_dot() {
-        assert_eq!(
-            Tuple::dot(Tuple::vector(1.0, 2.0, 3.0), Tuple::vector(2.0, 3.0, 4.0)),
-            20.0
-        );
-    }
-    #[test]
-    fn vec_cross() {}
 }
