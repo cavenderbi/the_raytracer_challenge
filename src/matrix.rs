@@ -18,7 +18,10 @@ impl Matrix2x2 {
     }
     pub fn inverse(&self) -> Self {
         let determinant_inv = 1.0 / self.determinant();
-        Self::new([[self[1][1] * determinant_inv, -self[1][0] * determinant_inv], [-self[0][1] * determinant_inv, self[0][0] * determinant_inv]])
+        Self::new([
+            [self[1][1] * determinant_inv, -self[1][0] * determinant_inv],
+            [-self[0][1] * determinant_inv, self[0][0] * determinant_inv],
+        ])
     }
 }
 impl Index<usize> for Matrix2x2 {
@@ -159,6 +162,66 @@ impl Matrix4x4 {
             [0., 0., 0., 1.],
         ],
     };
+    pub fn translation(x: f64, y: f64, z: f64) -> Self {
+        Self {
+            data: [
+                [1., 0., 0., x],
+                [0., 1., 0., y],
+                [0., 0., 1., z],
+                [0., 0., 0., 1.],
+            ],
+        }
+    }
+    pub fn scaling(x: f64, y: f64, z: f64) -> Self {
+        Self {
+            data: [
+                [x, 0., 0., 0.],
+                [0., y, 0., 0.],
+                [0., 0., z, 0.],
+                [0., 0., 0., 1.],
+            ],
+        }
+    }
+    pub fn rotation_x(r: f64) -> Self {
+        Self {
+            data: [
+                [1., 0., 0., 0.],
+                [0., r.cos(), -r.sin(), 0.],
+                [0., r.sin(), r.cos(), 0.],
+                [0., 0., 0., 1.],
+            ],
+        }
+    }
+    pub fn rotation_y(r: f64) -> Self {
+        Self {
+            data: [
+                [r.cos(),  0., r.sin(), 0.],
+                [0.,       1., 0.,      0.],
+                [-r.sin(), 0., r.cos(), 0.],
+                [0.,       0., 0.,      1.],
+            ],
+        }
+    }
+    pub fn rotation_z(r: f64) -> Self {
+        Self {
+            data: [
+                [r.cos(), -r.sin(), 0., 0.],
+                [r.sin(),  r.cos(), 0., 0.],
+                [0.,       0.,      1., 0.],
+                [0.,       0.,      0., 1.],
+            ]
+        }
+    }
+    pub fn shearing(xy: f64, xz: f64, yx: f64, yz: f64, zx: f64, zy: f64) -> Self {
+        Self {
+            data: [
+                [1., xy, xz, 0.],
+                [yx, 1., yz, 0.],
+                [zx, zy, 1., 0.],
+                [0., 0., 0., 1.],
+            ]
+        }
+    }
     pub fn new(data: [[f64; 4]; 4]) -> Self {
         Self { data }
     }
@@ -264,7 +327,6 @@ impl PartialEq for Matrix4x4 {
         for i in 0..4 {
             for j in 0..4 {
                 if (self[i][j] - other[i][j]).abs() > 1e-5 {
-                    println!("{}-{}={}", self[i][j], other[i][j], self[i][j] - other[i][j]);
                     return false;
                 }
             }

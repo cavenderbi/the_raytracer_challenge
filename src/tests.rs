@@ -1,6 +1,23 @@
 #[cfg(test)]
 mod tests {
+    use std::f64::consts::PI;
+
     use crate::{canvas::Canvas, color::Color, matrix::*, tuple::Tuple};
+    // Putting It Together
+    #[test]
+    #[ignore]
+    fn clock() {
+        let mut c = Canvas::new(60, 60);
+        for i in 0..12 {
+            let point = Matrix4x4::rotation_y(i as f64 * PI / 6.) * Tuple::point(0., 0., 1.);
+            c.set_pixel(
+                (((point.x + 1.) * c.get_width() as f64 * 3. / 8.) + (c.get_width() as f64 / 8.)) as usize,
+                (((point.z + 1.) * c.get_height() as f64 * 3. / 8.) + (c.get_height() as f64/ 8.)) as usize,
+                Color::new(1., 1., 1.),
+            );
+        }
+        c.write_ppm("images/clock.ppm");
+    }
     // Linear Algebra tests.
     #[test]
     fn point_w() {
@@ -281,29 +298,177 @@ mod tests {
             [-7., 6., 6., 2.],
         ]);
         let i = Matrix4x4::new([
-            [-0.04074, -0.07778,  0.14444, -0.22222], 
-            [-0.07778,  0.03333,  0.36667, -0.33333], 
-            [-0.02901, -0.14630, -0.10926,  0.12963], 
-            [ 0.17778,  0.06667, -0.26667,  0.33333],
+            [-0.04074, -0.07778, 0.14444, -0.22222],
+            [-0.07778, 0.03333, 0.36667, -0.33333],
+            [-0.02901, -0.14630, -0.10926, 0.12963],
+            [0.17778, 0.06667, -0.26667, 0.33333],
         ]);
         assert_eq!(a.inverse(), i);
     }
     #[test]
     fn mul_matrix_4x4_inverse() {
         let a = Matrix4x4::new([
-            [ 3., -9.,  7.,  3.],
-            [ 3., -8.,  2., -9.],
-            [-4.,  4.,  4.,  1.],
-            [-6.,  5., -1.,  1.],
+            [3., -9., 7., 3.],
+            [3., -8., 2., -9.],
+            [-4., 4., 4., 1.],
+            [-6., 5., -1., 1.],
         ]);
         let b = Matrix4x4::new([
-            [ 8.,  2.,  2.,  2.],
-            [ 3., -1.,  7.,  0.],
-            [ 7.,  0.,  5.,  4.],
-            [ 6., -2.,  0.,  5.],
+            [8., 2., 2., 2.],
+            [3., -1., 7., 0.],
+            [7., 0., 5., 4.],
+            [6., -2., 0., 5.],
         ]);
-        let c = a * b; 
+        let c = a * b;
         assert_eq!(c * b.inverse(), a);
+    }
+    // Matrix transformations tests.
+    #[test]
+    fn matrix_translate_point() {
+        let transform = Matrix4x4::translation(5., -3., 2.);
+        let p = Tuple::point(-3., 4., 5.);
+        let pt = Tuple::point(2., 1., 7.);
+        assert_eq!(transform * p, pt);
+    }
+    #[test]
+    fn matrix_inverse_translate_point() {
+        let inv = Matrix4x4::translation(5., -3., 2.).inverse();
+        let p = Tuple::point(-3., 4., 5.);
+        let pt = Tuple::point(-8., 7., 3.);
+        assert_eq!(inv * p, pt);
+    }
+    #[test]
+    fn matrix_translate_vector() {
+        let transform = Matrix4x4::translation(5., -3., 2.);
+        let v = Tuple::vector(-3., 4., 5.);
+        assert_eq!(transform * v, v);
+    }
+    #[test]
+    fn matrix_scale_point() {
+        let transform = Matrix4x4::scaling(2., 3., 4.);
+        let p = Tuple::point(-4., 6., 8.);
+        let pt = Tuple::point(-8., 18., 32.);
+        assert_eq!(transform * p, pt);
+    }
+    #[test]
+    fn matrix_scale_vector() {
+        let transform = Matrix4x4::scaling(2., 3., 4.);
+        let v = Tuple::vector(-4., 6., 8.);
+        let vt = Tuple::vector(-8., 18., 32.);
+        assert_eq!(transform * v, vt);
+    }
+    #[test]
+    fn matrix_scale_inverse_vector() {
+        let inv = Matrix4x4::scaling(2., 3., 4.).inverse();
+        let v = Tuple::vector(-4., 6., 8.);
+        let vt = Tuple::vector(-2., 2., 2.);
+        assert_eq!(inv * v, vt);
+    }
+    #[test]
+    fn matrix_reflect_point() {
+        let transform = Matrix4x4::scaling(-1., 1., 1.);
+        let p = Tuple::point(2., 3., 4.);
+        let pt = Tuple::point(-2., 3., 4.);
+        assert_eq!(transform * p, pt);
+    }
+    #[test]
+    fn matrix_rotate_x_point() {
+        let p = Tuple::point(0., 1., 0.);
+        let half_q = Matrix4x4::rotation_x(PI / 4.);
+        let phr = Tuple::point(0., 1. / 2.0_f64.sqrt(), 1. / 2.0_f64.sqrt());
+        let q = Matrix4x4::rotation_x(PI / 2.);
+        let pr = Tuple::point(0., 0., 1.);
+        assert_eq!(half_q * p, phr);
+        assert_eq!(q * p, pr);
+    }
+    #[test]
+    fn matrix_rotate_inverse_x_point() {
+        let p = Tuple::point(0., 1., 0.);
+        let inv = Matrix4x4::rotation_x(PI / 4.).inverse();
+        let pr = Tuple::point(0., 1. / 2.0_f64.sqrt(), -1. / 2.0_f64.sqrt());
+        assert_eq!(inv * p, pr);
+    }
+    #[test]
+    fn matrix_rotate_y_point() {
+        let p = Tuple::point(0., 0., 1.);
+        let half_q = Matrix4x4::rotation_y(PI / 4.);
+        let q = Matrix4x4::rotation_y(PI / 2.);
+        assert_eq!(
+            half_q * p,
+            Tuple::point(1. / 2.0_f64.sqrt(), 0., 1. / 2.0_f64.sqrt())
+        );
+        assert_eq!(q * p, Tuple::point(1., 0., 0.));
+    }
+    #[test]
+    fn matrix_rotate_z_point() {
+        let p = Tuple::point(0., 1., 0.);
+        let half_q = Matrix4x4::rotation_z(PI / 4.);
+        let q = Matrix4x4::rotation_z(PI / 2.);
+        assert_eq!(
+            half_q * p,
+            Tuple::point(-1. / 2.0_f64.sqrt(), 1. / 2.0_f64.sqrt(), 0.)
+        );
+        assert_eq!(q * p, Tuple::point(-1., 0., 0.));
+    }
+    #[test]
+    fn matrix_shear_xy() {
+        let transform = Matrix4x4::shearing(1., 0., 0., 0., 0., 0.);
+        let p = Tuple::point(2., 3., 4.);
+        assert_eq!(transform * p, Tuple::point(5., 3., 4.));
+    }
+    #[test]
+    fn matrix_shear_xz() {
+        let transform = Matrix4x4::shearing(0., 1., 0., 0., 0., 0.);
+        let p = Tuple::point(2., 3., 4.);
+        assert_eq!(transform * p, Tuple::point(6., 3., 4.));
+    }
+    #[test]
+    fn matrix_shear_yx() {
+        let transform = Matrix4x4::shearing(0., 0., 1., 0., 0., 0.);
+        let p = Tuple::point(2., 3., 4.);
+        assert_eq!(transform * p, Tuple::point(2., 5., 4.));
+    }
+    #[test]
+    fn matrix_shear_yz() {
+        let transform = Matrix4x4::shearing(0., 0., 0., 1., 0., 0.);
+        let p = Tuple::point(2., 3., 4.);
+        assert_eq!(transform * p, Tuple::point(2., 7., 4.));
+    }
+    #[test]
+    fn matrix_shear_zx() {
+        let transform = Matrix4x4::shearing(0., 0., 0., 0., 1., 0.);
+        let p = Tuple::point(2., 3., 4.);
+        assert_eq!(transform * p, Tuple::point(2., 3., 6.));
+    }
+    #[test]
+    fn matrix_shear_zy() {
+        let transform = Matrix4x4::shearing(0., 0., 0., 0., 0., 1.);
+        let p = Tuple::point(2., 3., 4.);
+        assert_eq!(transform * p, Tuple::point(2., 3., 7.));
+    }
+    #[test]
+    fn matrix_sequential_transformations() {
+        let p = Tuple::point(1., 0., 1.);
+        let a = Matrix4x4::rotation_x(PI / 2.);
+        let b = Matrix4x4::scaling(5., 5., 5.);
+        let c = Matrix4x4::translation(10., 5., 7.);
+
+        let p2 = a * p;
+        assert_eq!(p2, Tuple::point(1., -1., 0.));
+
+        let p3 = b * p2;
+        assert_eq!(p3, Tuple::point(5., -5., 0.));
+
+        let p4 = c * p3;
+        assert_eq!(p4, Tuple::point(15., 0., 7.));
+    }
+    #[test]
+    fn matrix_chained_transformations() {
+        let p = Tuple::point(1., 0., 1.);
+        let t = Matrix4x4::translation(10., 5., 7.)
+            * Matrix4x4::scaling(5., 5., 5.)
+            * Matrix4x4::rotation_x(PI / 2.);
+        assert_eq!(t * p, Tuple::point(15., 0., 7.));
     }
     // Color tests.
     #[test]
