@@ -15,19 +15,23 @@ impl Canvas {
             pixels: vec![Color::new(0.0, 0.0, 0.0); width * height],
         }
     }
-    pub fn get_width(&self) -> usize { self.width }
-    pub fn get_height(&self) -> usize { self.height }
-    pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) -> () {
+    pub fn get_width(&self) -> usize {
+        self.width
+    }
+    pub fn get_height(&self) -> usize {
+        self.height
+    }
+    pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
         self.pixels[y * self.width + x] = color;
     }
     pub fn pixel_at(&self, x: usize, y: usize) -> Color {
         self.pixels[y * self.width + x]
     }
-    fn ppm_header(&self, file: &mut File) -> () {
+    fn ppm_header(&self, file: &mut File) {
         file.write(format!("P3\n{} {}\n255\n", self.width, self.height).as_bytes())
             .expect("Failed to write header to file.");
     }
-    fn ppm_body(&self, file: &mut File) -> () {
+    fn ppm_body(&self, file: &mut File) {
         let mut i = 0;
         for pixel in &self.pixels {
             file.write(format!("{} ", pixel).as_bytes())
@@ -41,7 +45,7 @@ impl Canvas {
             }
         }
     }
-    pub fn write_ppm(&self, filename: &'static str) -> () {
+    pub fn write_ppm(&self, filename: &'static str) {
         let mut file = File::create(filename).expect("Failed to create file.");
         self.ppm_header(&mut file);
         self.ppm_body(&mut file);

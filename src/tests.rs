@@ -2,21 +2,153 @@
 mod tests {
     use std::f64::consts::PI;
 
-    use crate::{canvas::Canvas, color::Color, matrix::*, tuple::Tuple};
+    use crate::{canvas::Canvas, color::Color, matrix::*, ray::Ray, shapes::Shapes, tuple::Tuple};
     // Putting It Together
     #[test]
     #[ignore]
-    fn clock() {
+    fn clock() {    // Chapter 04
         let mut c = Canvas::new(60, 60);
         for i in 0..12 {
             let point = Matrix4x4::rotation_y(i as f64 * PI / 6.) * Tuple::point(0., 0., 1.);
             c.set_pixel(
-                (((point.x + 1.) * c.get_width() as f64 * 3. / 8.) + (c.get_width() as f64 / 8.)) as usize,
-                (((point.z + 1.) * c.get_height() as f64 * 3. / 8.) + (c.get_height() as f64/ 8.)) as usize,
+                (((point.x + 1.) * c.get_width() as f64 * 3. / 8.) + (c.get_width() as f64 / 8.))
+                    as usize,
+                (((point.z + 1.) * c.get_height() as f64 * 3. / 8.) + (c.get_height() as f64 / 8.))
+                    as usize,
                 Color::new(1., 1., 1.),
             );
         }
         c.write_ppm("images/clock.ppm");
+    }
+    #[test]
+    #[ignore]
+    fn circle() {
+        let origin = Tuple::point(0., 0., -5.);
+        let wall_z = 10.;
+        let wall_size = 7.;
+        let canvas_pixels = 100;
+        let pixel_size = wall_size / canvas_pixels as f64;
+        let half = wall_size / 2.;
+
+        let mut c = Canvas::new(canvas_pixels, canvas_pixels);
+        let color = Color::new(1., 0., 0.);
+        let sphere = Shapes::sphere(Matrix4x4::_IDENTITY);
+        for y in 0..canvas_pixels {
+            let world_y = half - pixel_size * y as f64;
+            for x in 0..canvas_pixels {
+                let world_x = -half + pixel_size * x as f64;
+                let pos = Tuple::point(world_x, world_y, wall_z);
+                let r = Ray::new(origin, (pos - origin).normalize());
+                if let Some(_) = sphere.intersect(r) {
+                    c.set_pixel(x, y, color);
+                }
+            }
+        }
+        c.write_ppm("images/circle.ppm");
+    }
+    #[test]
+    #[ignore]
+    fn squished_vertically_circle() {
+        let origin = Tuple::point(0., 0., -5.);
+        let wall_z = 10.;
+        let wall_size = 7.;
+        let canvas_pixels = 100;
+        let pixel_size = wall_size / canvas_pixels as f64;
+        let half = wall_size / 2.;
+
+        let mut c = Canvas::new(canvas_pixels, canvas_pixels);
+        let color = Color::new(1., 0., 0.);
+        let sphere = Shapes::sphere(Matrix4x4::scaling(1., 0.5, 1.).inverse());
+        for y in 0..canvas_pixels {
+            let world_y = half - pixel_size * y as f64;
+            for x in 0..canvas_pixels {
+                let world_x = -half + pixel_size * x as f64;
+                let pos = Tuple::point(world_x, world_y, wall_z);
+                let r = Ray::new(origin, (pos - origin).normalize());
+                if let Some(_) = sphere.intersect(r) {
+                    c.set_pixel(x, y, color);
+                }
+            }
+        }
+        c.write_ppm("images/squished_vertically_circle.ppm");
+    }
+    #[test]
+    #[ignore]
+    fn squished_horizontally_circle() {
+        let origin = Tuple::point(0., 0., -5.);
+        let wall_z = 10.;
+        let wall_size = 7.;
+        let canvas_pixels = 100;
+        let pixel_size = wall_size / canvas_pixels as f64;
+        let half = wall_size / 2.;
+
+        let mut c = Canvas::new(canvas_pixels, canvas_pixels);
+        let color = Color::new(1., 0., 0.);
+        let sphere = Shapes::sphere(Matrix4x4::scaling(0.5, 1., 1.).inverse());
+        for y in 0..canvas_pixels {
+            let world_y = half - pixel_size * y as f64;
+            for x in 0..canvas_pixels {
+                let world_x = -half + pixel_size * x as f64;
+                let pos = Tuple::point(world_x, world_y, wall_z);
+                let r = Ray::new(origin, (pos - origin).normalize());
+                if let Some(_) = sphere.intersect(r) {
+                    c.set_pixel(x, y, color);
+                }
+            }
+        }
+        c.write_ppm("images/squished_horizontally=_circle.ppm");
+    }
+    #[test]
+    #[ignore]
+    fn shrunk_and_rotated_circle() {
+        let origin = Tuple::point(0., 0., -5.);
+        let wall_z = 10.;
+        let wall_size = 7.;
+        let canvas_pixels = 100;
+        let pixel_size = wall_size / canvas_pixels as f64;
+        let half = wall_size / 2.;
+
+        let mut c = Canvas::new(canvas_pixels, canvas_pixels);
+        let color = Color::new(1., 0., 0.);
+        let sphere = Shapes::sphere((Matrix4x4::rotation_z(PI/4.) * Matrix4x4::scaling(0.5, 1., 1.)).inverse());
+        for y in 0..canvas_pixels {
+            let world_y = half - pixel_size * y as f64;
+            for x in 0..canvas_pixels {
+                let world_x = -half + pixel_size * x as f64;
+                let pos = Tuple::point(world_x, world_y, wall_z);
+                let r = Ray::new(origin, (pos - origin).normalize());
+                if let Some(_) = sphere.intersect(r) {
+                    c.set_pixel(x, y, color);
+                }
+            }
+        }
+        c.write_ppm("images/shrunk_and_rotated_circle.ppm");
+    }
+    #[test]
+    #[ignore]
+    fn shrunk_and_skewed_circle() {
+        let origin = Tuple::point(0., 0., -5.);
+        let wall_z = 10.;
+        let wall_size = 7.;
+        let canvas_pixels = 100;
+        let pixel_size = wall_size / canvas_pixels as f64;
+        let half = wall_size / 2.;
+
+        let mut c = Canvas::new(canvas_pixels, canvas_pixels);
+        let color = Color::new(1., 0., 0.);
+        let sphere = Shapes::sphere((Matrix4x4::rotation_z(PI/4.) * Matrix4x4::shearing(1., 0., 0., 0., 0., 0.)).inverse());
+        for y in 0..canvas_pixels {
+            let world_y = half - pixel_size * y as f64;
+            for x in 0..canvas_pixels {
+                let world_x = -half + pixel_size * x as f64;
+                let pos = Tuple::point(world_x, world_y, wall_z);
+                let r = Ray::new(origin, (pos - origin).normalize());
+                if let Some(_) = sphere.intersect(r) {
+                    c.set_pixel(x, y, color);
+                }
+            }
+        }
+        c.write_ppm("images/shrunk_and_skewed_circle.ppm");
     }
     // Linear Algebra tests.
     #[test]
@@ -469,6 +601,80 @@ mod tests {
             * Matrix4x4::scaling(5., 5., 5.)
             * Matrix4x4::rotation_x(PI / 2.);
         assert_eq!(t * p, Tuple::point(15., 0., 7.));
+    }
+    // Ray tests.
+    #[test]
+    fn ray_query() {
+        let origin = Tuple::point(1., 2., 3.);
+        let direction = Tuple::vector(4., 5., 6.);
+        let r = Ray::new(origin, direction);
+        assert_eq!(r.origin, origin);
+        assert_eq!(r.direction, direction);
+    }
+    #[test]
+    fn ray_points_from_a_distance() {
+        let r = Ray::new(Tuple::point(2., 3., 4.), Tuple::vector(1., 0., 0.));
+        assert_eq!(r.position_at(0.), Tuple::point(2., 3., 4.));
+        assert_eq!(r.position_at(1.), Tuple::point(3., 3., 4.));
+        assert_eq!(r.position_at(-1.), Tuple::point(1., 3., 4.));
+        assert_eq!(r.position_at(2.5), Tuple::point(4.5, 3., 4.));
+    }
+    // Shape tests.
+   /*  #[test]
+    fn sphere_ray_intersection() {
+        let r = Ray::new(Tuple::point(0., 0., -5.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::Sphere;
+        let hit = s.intersect(r);
+        assert_eq!(hit.unwrap().t(), 4.);
+
+        let r = Ray::new(Tuple::point(0., 1., -5.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::Sphere;
+        let hit = s.intersect(r);
+        assert_eq!(hit.unwrap().t(), 5.);
+
+        let r = Ray::new(Tuple::point(0., 2., -5.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::Sphere;
+        let hit = s.intersect(r);
+        assert_eq!(hit, None);
+
+        let r = Ray::new(Tuple::point(0., 0., 0.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::Sphere;
+        let hit = s.intersect(r);
+        assert_eq!(hit.unwrap().t(), 1.);
+
+        let r = Ray::new(Tuple::point(0., 0., 5.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::Sphere;
+        let hit = s.intersect(r);
+        assert_eq!(hit, None);
+    } */
+    // Ray transformations.
+    #[test]
+    fn ray_translation() {
+        let r = Ray::new(Tuple::point(1., 2., 3.), Tuple::vector(0., 1., 0.));
+        let m = Matrix4x4::translation(3., 4., 5.);
+        let r2 = r.transform(m);
+        assert_eq!(r2.origin, Tuple::point(4., 6., 8.));
+        assert_eq!(r2.direction, Tuple::vector(0., 1., 0.));
+    }
+    #[test]
+    fn ray_scale() {
+        let r = Ray::new(Tuple::point(1., 2., 3.), Tuple::vector(0., 1., 0.));
+        let m = Matrix4x4::scaling(2., 3., 4.);
+        let r2 = r.transform(m);
+        assert_eq!(r2.origin, Tuple::point(2., 6., 12.));
+        assert_eq!(r2.direction, Tuple::vector(0., 3., 0.));
+    }
+    #[test]
+    fn scaled_ray_sphere_intersection() {
+        let r = Ray::new(Tuple::point(0., 0., -5.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::sphere(Matrix4x4::scaling(2., 2., 2.).inverse());
+        assert_eq!(s.intersect(r).unwrap().xs(), vec![3., 7.]);
+    }
+    #[test]
+    fn translated_ray_sphere_intersection() {
+        let r = Ray::new(Tuple::point(0., 0., -5.), Tuple::vector(0., 0., 1.));
+        let s = Shapes::sphere(Matrix4x4::translation(5., 0., 0.));
+        assert_eq!(s.intersect(r), None);
     }
     // Color tests.
     #[test]

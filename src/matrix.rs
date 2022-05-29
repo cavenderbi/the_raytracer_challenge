@@ -65,9 +65,9 @@ impl Matrix3x3 {
     }
     pub fn transpose(&self) -> Self {
         let mut data = [[0.0; 3]; 3];
-        for i in 0..3 {
-            for j in 0..3 {
-                data[j][i] = self[i][j];
+        for (i, row) in self.data.iter().enumerate() {
+            for (j, item) in row.iter().enumerate() {
+                data[j][i] = *item;
             }
         }
 
@@ -98,9 +98,10 @@ impl Matrix3x3 {
     }
     pub fn cofactor(&self, row: usize, col: usize) -> f64 {
         if (row + col) & 1 == 1 {
-            return -self.minor(row, col);
+            -self.minor(row, col)
+        } else {
+            self.minor(row, col)
         }
-        return self.minor(row, col);
     }
     pub fn determinant(&self) -> f64 {
         let mut det = 0.;
@@ -195,10 +196,10 @@ impl Matrix4x4 {
     pub fn rotation_y(r: f64) -> Self {
         Self {
             data: [
-                [r.cos(),  0., r.sin(), 0.],
-                [0.,       1., 0.,      0.],
+                [r.cos(), 0., r.sin(), 0.],
+                [0., 1., 0., 0.],
                 [-r.sin(), 0., r.cos(), 0.],
-                [0.,       0., 0.,      1.],
+                [0., 0., 0., 1.],
             ],
         }
     }
@@ -206,10 +207,10 @@ impl Matrix4x4 {
         Self {
             data: [
                 [r.cos(), -r.sin(), 0., 0.],
-                [r.sin(),  r.cos(), 0., 0.],
-                [0.,       0.,      1., 0.],
-                [0.,       0.,      0., 1.],
-            ]
+                [r.sin(), r.cos(), 0., 0.],
+                [0., 0., 1., 0.],
+                [0., 0., 0., 1.],
+            ],
         }
     }
     pub fn shearing(xy: f64, xz: f64, yx: f64, yz: f64, zx: f64, zy: f64) -> Self {
@@ -219,7 +220,7 @@ impl Matrix4x4 {
                 [yx, 1., yz, 0.],
                 [zx, zy, 1., 0.],
                 [0., 0., 0., 1.],
-            ]
+            ],
         }
     }
     pub fn new(data: [[f64; 4]; 4]) -> Self {
@@ -241,12 +242,12 @@ impl Matrix4x4 {
         }
         let mut data = [[0.0; 3]; 3];
         let mut new_i = 0;
-        for i in 0..4 {
+        for (i, r) in self.data.iter().enumerate() {
             if i != row {
                 let mut new_j = 0;
-                for j in 0..4 {
+                for (j, item) in r.iter().enumerate() {
                     if j != col {
-                        data[new_i][new_j] = self[i][j];
+                        data[new_i][new_j] = *item;
                         new_j += 1;
                     }
                 }
@@ -260,9 +261,10 @@ impl Matrix4x4 {
     }
     pub fn cofactor(&self, row: usize, col: usize) -> f64 {
         if (row + col) & 1 == 1 {
-            return -self.minor(row, col);
+            -self.minor(row, col)
+        } else {
+            self.minor(row, col)
         }
-        return self.minor(row, col);
     }
     pub fn determinant(&self) -> f64 {
         let mut det = 0.0;
@@ -274,10 +276,10 @@ impl Matrix4x4 {
     pub fn inverse(&self) -> Self {
         let d = self.determinant();
         let mut data = [[0.0; 4]; 4];
-        for i in 0..4 {
-            for j in 0..4 {
+        for (i, row) in data.iter_mut().enumerate() {
+            for (j, item) in row.iter_mut().enumerate() {
                 let c = self.cofactor(i, j);
-                data[j][i] = c / d;
+                *item = c / d;
             }
         }
         Matrix4x4::new(data)
@@ -331,6 +333,7 @@ impl PartialEq for Matrix4x4 {
                 }
             }
         }
-        return true;
+
+        true
     }
 }
